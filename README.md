@@ -1,4 +1,4 @@
-# Active Sensing RNN Server
+# Map-aided Active Sensing
 
 This repository contains the `rnn_server-50rate.py` script, which implements a map-aided approach for active sensing in joint snensing and communication. It optimizes beamforming weights to minimize CRB while considering communication performance.
 
@@ -58,3 +58,8 @@ You can modify key parameters at the top of `rnn_server-50rate.py`:
 - `rnn_server-50rate.py`: Main training script.
 - `tf_crb_eval_style.py`: Contains TensorFlow implementations of CRB loss functions.
 - `logs/`: Directory where execution logs are stored.
+
+  
+## Acknowledgments
+
+Part of the code is derived from [Active-sensing-for-localization](https://github.com/dzhang0/Active-sensing-for-localization).
