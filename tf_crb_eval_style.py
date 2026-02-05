@@ -394,7 +394,7 @@ def tf_crb_loss_eval_style_fast(theta_list, loc_input, snr_db):
     Jpq = J_full[:, 0:4, 4:8]
     Jqq = J_full[:, 4:8, 4:8]
     # Strict inverse with jitter for nuisance block (fallback if near-singular)
-    # Jqq 是 2×2 的极坐标散射点块，这里应当使用 2×2 的批量SPD逆
+    
     Jqq_inv = robust_inv_spd_2x2_batch(Jqq)
     J_eff = Jpp - tf.matmul(Jpq, tf.matmul(Jqq_inv, tf.transpose(Jpq, perm=[0, 2, 1])))
     # Effective Fisher block: symmetric + small jitter, strict inverse
@@ -697,9 +697,9 @@ def _tf_map_R_theta(theta_ue, d_ue, theta_sp, d_sp, wall_n=None, wall_b=None, bs
     ddsp_d = tf.einsum('bi,bij,bjk->bk', ddsp_du, ds_du, T)         # [B,2]
     dthetasp_d = tf.einsum('bi,bij,bjk->bk', dthetasp_du, ds_du, T)  # [B,2]
 
-    # R_theta: [B,4,2]，按顺序为 [d_L, θ_UE, d_SP, θ_SP] 对 (θ_UE, d_UE) 的雅可比
-    e0 = tf.stack([tf.ones([B], tf.float32), tf.zeros([B], tf.float32)], axis=1)  # ∂(d_L,θ_UE)/∂(θ_UE,d_UE) 的 d_L 部分
-    e1 = tf.stack([tf.zeros([B], tf.float32), tf.ones([B], tf.float32)], axis=1)  # ∂(d_L,θ_UE)/∂(θ_UE,d_UE) 的 θ_UE 部分
+    # R_theta: [B,4,2]， [d_L, θ_UE, d_SP, θ_SP] to (θ_UE, d_UE) jacobian
+    e0 = tf.stack([tf.ones([B], tf.float32), tf.zeros([B], tf.float32)], axis=1)  # ∂(d_L,θ_UE)/∂(θ_UE,d_UE)  d_L 
+    e1 = tf.stack([tf.zeros([B], tf.float32), tf.ones([B], tf.float32)], axis=1)  # ∂(d_L,θ_UE)/∂(θ_UE,d_UE) θ_UE 
     R = tf.stack([e0, e1, ddsp_d, dthetasp_d], axis=1)  # [B,4,2]
 
     return R
@@ -713,7 +713,7 @@ def tf_crb_ue_peb_nomap_multi(theta_list, loc_input, snr_db):
     Jpp = J_theta[:, 0:2, 0:2]
     Jpq = J_theta[:, 0:2, 2:4]
     Jqq = J_theta[:, 2:4, 2:4]
-    # 这里 Jqq 是 2×2 的散射点极坐标块，应使用 2×2 批量SPD逆
+    # 
     Jqq_inv = robust_inv_spd_2x2_batch(Jqq)
     J_eff_ue = Jpp - tf.matmul(Jpq, tf.matmul(Jqq_inv, tf.transpose(Jpq, perm=[0, 2, 1])))  # [B,2,2]
     # Invert to covariance in polar, map to Cartesian, return mean PEB^2
@@ -752,7 +752,7 @@ def tf_crb_ue_peb_nomap_single(theta_list, loc_input, snr_db):
     Jpp = J_theta[:, 0:2, 0:2]
     Jpq = J_theta[:, 0:2, 2:4]
     Jqq = J_theta[:, 2:4, 2:4]
-    # 单载波同理使用 2×2 批量SPD逆
+    # 
     Jqq_inv = robust_inv_spd_2x2_batch(Jqq)
     J_eff_ue = Jpp - tf.matmul(Jpq, tf.matmul(Jqq_inv, tf.transpose(Jpq, perm=[0, 2, 1])))
     cov_polar = robust_inv_spd_2x2_batch(J_eff_ue)
